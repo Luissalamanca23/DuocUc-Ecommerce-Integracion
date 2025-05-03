@@ -101,7 +101,7 @@
 
   <script>
     // Reemplaza 'tu_clave_publica_de_stripe' con tu clave pública real de Stripe
-    const stripe = Stripe('pk_test_51PSNtmEOr4XpCaljjZYdV5787BWGWc4Hs2v0U1LCEvtlIaCt7lAEKXPCaiBEJT3WTJvFgwK0wcnHFEJZc6HwJY6S00I7cXFS4K');
+    const stripe = Stripe(process.env.STRIPE_PUBLISHABLE_KEY);
     const elements = stripe.elements();
     
     // Crear el elemento de tarjeta y montarlo en el DOM

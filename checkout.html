@@ -1,0 +1,242 @@
+<!-- Archivo: checkout.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Tu Tienda</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    #card-element {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    #card-errors {
+      color: #dc3545;
+      margin-top: 10px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .spinner {
+      display: none;
+      margin-left: 10px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 2s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Finalizar Compra</h1>
+    <div id="checkout-form">
+      <div class="form-group">
+        <label for="name">Nombre completo</label>
+        <input type="text" id="name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="card-element">Información de tarjeta de crédito</label>
+        <div id="card-element">
+          <!-- El elemento de Stripe se insertará aquí -->
+        </div>
+        <div id="card-errors" role="alert"></div>
+      </div>
+      <button id="submit-button">Pagar <span id="total-amount">$0.00</span></button>
+      <div id="spinner" class="spinner"></div>
+    </div>
+    <div id="payment-success" style="display: none;">
+      <h2>¡Pago completado con éxito!</h2>
+      <p>Gracias por tu compra. Recibirás un correo de confirmación en breve.</p>
+    </div>
+  </div>
+
+  <script>
+    // Reemplaza 'tu_clave_publica_de_stripe' con tu clave pública real de Stripe
+    const stripe = Stripe('pk_test_51PSNtmEOr4XpCaljjZYdV5787BWGWc4Hs2v0U1LCEvtlIaCt7lAEKXPCaiBEJT3WTJvFgwK0wcnHFEJZc6HwJY6S00I7cXFS4K');
+    const elements = stripe.elements();
+    
+    // Crear el elemento de tarjeta y montarlo en el DOM
+    const cardElement = elements.create('card', {
+      style: {
+        base: {
+          fontSize: '16px',
+          color: '#32325d',
+        }
+      }
+    });
+    cardElement.mount('#card-element');
+
+    // Manejar los errores de validación en tiempo real
+    cardElement.on('change', ({error}) => {
+      const displayError = document.getElementById('card-errors');
+      if (error) {
+        displayError.textContent = error.message;
+      } else {
+        displayError.textContent = '';
+      }
+    });
+
+    // Manejar el envío del formulario
+    const form = document.getElementById('checkout-form');
+    const submitButton = document.getElementById('submit-button');
+    const spinner = document.getElementById('spinner');
+    
+    // Recuperar el total de la compra (en un caso real, esto vendría de tu carrito)
+    // Esta es solo una simulación
+    const totalAmount = 1999; // $19.99 en centavos
+    document.getElementById('total-amount').textContent = `$${(totalAmount / 100).toFixed(2)}`;
+
+    submitButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      
+      // Deshabilitar el botón y mostrar spinner durante el procesamiento
+      submitButton.disabled = true;
+      spinner.style.display = 'inline-block';
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+
+      try {
+        // Crear un PaymentMethod con los datos de la tarjeta
+        const {paymentMethod, error} = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+          billing_details: {
+            name: name,
+            email: email
+          }
+        });
+
+        if (error) {
+          // Mostrar error al cliente
+          const errorElement = document.getElementById('card-errors');
+          errorElement.textContent = error.message;
+          submitButton.disabled = false;
+          spinner.style.display = 'none';
+          return;
+        }
+
+        // Enviar el ID del PaymentMethod al servidor
+        const response = await fetch('/process-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            payment_method_id: paymentMethod.id,
+            amount: totalAmount,
+            email: email,
+            name: name
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          // Mostrar error del servidor
+          const errorElement = document.getElementById('card-errors');
+          errorElement.textContent = result.error;
+          submitButton.disabled = false;
+          spinner.style.display = 'none';
+        } else if (result.requires_action) {
+          // Se requiere una acción adicional, como la autenticación 3D Secure
+          const { error } = await stripe.handleCardAction(result.payment_intent_client_secret);
+          
+          if (error) {
+            // Mostrar error
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = error.message;
+          } else {
+            // Confirmar el pago después de la autenticación
+            const confirmResult = await fetch('/confirm-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                payment_intent_id: result.payment_intent_id
+              })
+            });
+            
+            const confirmResponse = await confirmResult.json();
+            
+            if (confirmResponse.success) {
+              // Mostrar éxito
+              showPaymentSuccess();
+            } else {
+              // Mostrar error
+              const errorElement = document.getElementById('card-errors');
+              errorElement.textContent = confirmResponse.error;
+              submitButton.disabled = false;
+              spinner.style.display = 'none';
+            }
+          }
+        } else if (result.success) {
+          // ¡Pago completado con éxito!
+          showPaymentSuccess();
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        const errorElement = document.getElementById('card-errors');
+        errorElement.textContent = 'Ocurrió un error al procesar el pago. Por favor, inténtalo de nuevo.';
+        submitButton.disabled = false;
+        spinner.style.display = 'none';
+      }
+    });
+
+    function showPaymentSuccess() {
+      document.getElementById('checkout-form').style.display = 'none';
+      document.getElementById('payment-success').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

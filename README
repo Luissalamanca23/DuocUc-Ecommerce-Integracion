@@ -1,0 +1,79 @@
+# Guía de Instalación de Stripe para tu E-commerce
+
+## 1. Requisitos Previos
+
+- Una cuenta de Stripe (puedes registrarte en [stripe.com](https://stripe.com))
+- Node.js y npm instalados (para el backend)
+- Tu sitio web de e-commerce existente
+
+## 2. Obtener las Credenciales de Stripe
+
+1. Inicia sesión en tu [Dashboard de Stripe](https://dashboard.stripe.com/)
+2. Ve a la sección **Desarrolladores → Claves API**
+3. Allí encontrarás dos claves importantes:
+   - **Clave publicable** (comienza con `pk_`)
+   - **Clave secreta** (comienza con `sk_`)
+
+## 3. Instalación del Backend
+
+1. Crea una carpeta para tu proyecto (si aún no la tienes)
+2. Instala las dependencias necesarias:
+
+```bash
+npm init -y
+npm install express stripe body-parser
+```
+
+3. Crea el archivo `server.js` con el código proporcionado
+4. Reemplaza `'tu_clave_secreta_de_stripe'` con tu clave secreta real
+5. Configura la divisa según tu país (el ejemplo usa 'mxn' para pesos mexicanos)
+
+## 4. Configuración del Frontend
+
+1. Crea una carpeta `public` en tu proyecto
+2. Coloca el archivo `checkout.html` en la carpeta `public`
+3. Reemplaza `'tu_clave_publica_de_stripe'` con tu clave publicable real
+
+## 5. Configuración del Webhook (Opcional pero Recomendado)
+
+1. En el Dashboard de Stripe, ve a **Desarrolladores → Webhooks**
+2. Crea un nuevo endpoint con la URL de tu servidor + `/webhook` (ej: `https://tutienda.com/webhook`)
+3. Selecciona los eventos que deseas recibir (al menos `payment_intent.succeeded` y `payment_intent.payment_failed`)
+4. Una vez creado, obtendrás una "Clave de firma del webhook"
+5. Reemplaza `'tu_clave_secreta_de_webhook'` en el código con esta clave
+
+## 6. Integración en tu E-commerce Existente
+
+### Opción 1: Página de Checkout Independiente
+1. Simplemente enlaza a la ruta `/checkout` desde tu carrito de compras
+2. Personaliza el HTML/CSS según el diseño de tu sitio
+
+### Opción 2: Integración Directa
+1. Copia el código relevante de `checkout.html` a tu página de checkout existente
+2. Asegúrate de incluir la biblioteca de Stripe: `<script src="https://js.stripe.com/v3/"></script>`
+3. Actualiza el formulario para que use los datos reales de tu carrito de compras
+
+## 7. Iniciar el Servidor
+
+```bash
+node server.js
+```
+
+## 8. Pruebas
+
+Para hacer pruebas sin realizar cargos reales:
+1. Usa el modo de prueba en Stripe (las claves comienzan con `pk_test_` y `sk_test_`)
+2. Utiliza [tarjetas de prueba de Stripe](https://stripe.com/docs/testing#cards) como:
+   - 4242 4242 4242 4242 (pago exitoso)
+   - 4000 0000 0000 3220 (requiere autenticación 3D Secure)
+
+## 9. Despliegue a Producción
+
+1. Cuando estés listo para ir a producción, cambia a las claves de producción de Stripe
+2. Asegúrate de que tu servidor tenga HTTPS habilitado
+3. Configura los webhooks para la URL de producción
+
+## Recursos Adicionales
+
+- [Documentación de Stripe](https://stripe.com/docs)
+- [Ejemplos oficiales de Stripe](https://github.com/stripe/stripe-samples)

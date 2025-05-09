@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang=\"es\">
+
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Panel de Administración - E-commerce</title>
+    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\">
+    <style>
+        :root {
+            --primary-color: #4a6cf7;
+            --secondary-color: #20c997;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --danger-color: #ff4d4d;
+            --success-color: #28a745;
+            --grey-color: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            color: var(--dark-color);
+            font-size: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            gap: 1rem;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background-color: var(--light-color);
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        /* Formularios */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem 0;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b5bf5;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #19b385;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff3333;
+        }
+
+        /* Tablas */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .alert-warning {
+            background-color: #fff7ed;
+            color: #9a3412;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: var(--dark-color);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Loaders */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loader-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loader-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loader-large {
+            width: 40px;
+            height: 40px;
+            border-width: 4px;
+            border-color: rgba(74, 108, 247, 0.3);
+            border-top-color: var(--primary-color);
+        }
+
+        /* Utilidades */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 {
+            margin-top: 5px;
+        }
+
+        .mt-2 {
+            margin-top: 10px;
+        }
+
+        .mt-3 {
+            margin-top: 15px;
+        }
+
+        .mt-4 {
+            margin-top: 20px;
+        }
+
+        .mb-1 {
+            margin-bottom: 5px;
+        }
+
+        .mb-2 {
+            margin-bottom: 10px;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class=\"container\">
+        <header class=\"header\">
+            <h1>Panel de Administración</h1>
+            <a href=\"/\" class=\"btn btn-secondary\">Ir a la tienda</a>
+        </header>
+
+        <div class=\"tabs\">
+            <div class=\"tab active\" data-tab=\"products\">Productos</div>
+            <div class=\"tab\" data-tab=\"categories\">Categorías</div>
+        </div>
+
+        <div id=\"alert-container\"></div>
+
+        <!-- Tab Productos -->
+        <div id=\"products-tab\" class=\"tab-content active\">
+            <div class=\"card\">
+                <h2 class=\"section-title\">Gestión de Productos</h2>
+                <div class=\"mb-3\">
+                    <button id=\"new-product-btn\" class=\"btn btn-primary\">
+                        <i class=\"fas fa-plus\"></i> Nuevo Producto
+                    </button>
+                </div>
+
+                <div class=\"table-container\">
+                    <table id=\"products-table\">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id=\"products-table-body\">
+                            <tr>
+                                <td colspan=\"6\" class=\"text-center\">
+                                    <div class=\"loader-container\">
+                                        <div class=\"loader loader-large\"></div>
+                                        <p class=\"mt-2\">Cargando productos...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Categorías -->
+        <div id=\"categories-tab\" class=\"tab-content\">
+            <div class=\"card\">
+                <h2 class=\"section-title\">Gestión de Categorías</h2>
+                <form id=\"category-form\" class=\"mb-4\">
+                    <div class=\"form-group\">
+                        <label for=\"category-name\">Nombre de la Categoría</label>
+                        <input type=\"text\" id=\"category-name\" class=\"form-control\" required>
+                    </div>
+                    <div class=\"form-group\">
+                        <label for=\"category-description\">Descripción</label>
+                        <textarea id=\"category-description\" class=\"form-control\"></textarea>
+                    </div>
+                    <button type=\"submit\" class=\"btn btn-primary\">Añadir Categoría</button>
+                </form>
+
+                <h3 class=\"mb-2\">Categorías Existentes</h3>
+                <div class=\"table-container\">
+                    <table id=\"categories-table\">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Fecha de Creación</th>
+                            </tr>
+                        </thead>
+                        <tbody id=\"categories-table-body\">
+                            <tr>
+                                <td colspan=\"4\" class=\"text-center\">
+                                    <div class=\"loader-container\">
+                                        <div class=\"loader loader-large\"></div>
+                                        <p class=\"mt-2\">Cargando categorías...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Añadir/Editar Producto -->
+        <div id=\"product-modal\" class=\"modal\">
+            <div class=\"modal-content\">
+                <span class=\"close\">&times;</span>
+                <div class=\"modal-header\">
+                    <h3 class=\"modal-title\" id=\"product-modal-title\">Nuevo Producto</h3>
+                </div>
+                <form id=\"product-form\">
+                    <input type=\"hidden\" id=\"product-id\">
+                    <div class=\"form-group\">
+                        <label for=\"product-name\">Nombre del Producto</label>
+                        <input type=\"text\" id=\"product-name\" class=\"form-control\" required>
+                    </div>
+                    <div class=\"form-group\">
+                        <label for=\"product-category\">Categoría</label>
+                        <select id=\"product-category\" class=\"form-control\" required>
+                            <option value=\"\">Seleccionar categoría</option>
+                        </select>
+                    </div>
+                    <div class=\"form-group\">
+                        <label for=\"product-description\">Descripción</label>
+                        <textarea id=\"product-description\" class=\"form-control\"></textarea>
+                    </div>
+                    <div class=\"form-group\">
+                        <label for=\"product-price\">Precio</label>
+                        <input type=\"number\" id=\"product-price\" class=\"form-control\" min=\"0\" step=\"0.01\"
+                            required>
+                    </div>
+                    <div class=\"form-group\">
+                        <label for=\"product-stock\">Stock</label>
+                        <input type=\"number\" id=\"product-stock\" class=\"form-control\" min=\"0\" value=\"0\">
+                    </div>
+                    <div class=\"modal-footer\">
+                        <button type=\"button\" class=\"btn btn-secondary close-modal\">Cancelar</button>
+                        <button type=\"submit\" class=\"btn btn-primary\">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Confirmación de Eliminación -->
+        <div id=\"delete-modal\" class=\"modal\">
+            <div class=\"modal-content\">
+                <span class=\"close\">&times;</span>
+                <div class=\"modal-header\">
+                    <h3 class=\"modal-title\">Confirmar Eliminación</h3>
+                </div>
+                <p>¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
+                <div class=\"modal-footer\">
+                    <button type=\"button\" class=\"btn btn-secondary close-modal\">Cancelar</button>
+                    <button type=\"button\" id=\"confirm-delete\" class=\"btn btn-danger\">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let products = [];
+        let categories = [];
+
+        let productIdToDelete = null;
+
+        // Datos de ejemplo (simulando API)
+        function fetchMockData() {
+            // Categorías de ejemplo
+            categories = [
+                { id: 1, name: 'Electrónica', description: 'Productos tecnológicos y gadgets', created_at: '2024-02-15' },
+                { id: 2, name: 'Ropa', description: 'Prendas de vestir y accesorios', created_at: '2024-02-20' },
+                { id: 3, name: 'Hogar', description: 'Artículos para el hogar y decoración', created_at: '2024-03-05' }
+            ];
+
+            // Productos de ejemplo
+            products = [
+                { id: 1, name: 'Smartphone XYZ', category_id: 1, category_name: 'Electrónica', description: 'Smartphone de última generación', price: 599.99, stock: 50 },
+                { id: 2, name: 'Laptop Pro', category_id: 1, category_name: 'Electrónica', description: 'Laptop para profesionales', price: 1299.99, stock: 20 },
+                { id: 3, name: 'Camiseta Casual', category_id: 2, category_name: 'Ropa', description: 'Camiseta de algodón', price: 24.99, stock: 100 },
+                { id: 4, name: 'Lámpara LED', category_id: 3, category_name: 'Hogar', description: 'Lámpara moderna para sala', price: 79.99, stock: 35 }
+            ];
+        }
+
+        // Funciones de utilidad
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alert-container');
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert alert-${type}`;
+            alertElement.innerHTML = message;
+
+            alertContainer.appendChild(alertElement);
+
+            // Auto cerrar alerta después de 3 segundos
+            setTimeout(() => {
+                alertElement.remove();
+            }, 3000);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // Gestión de productos
+        function renderProductsTable() {
+            const tableBody = document.getElementById('products-table-body');
+
+            if (products.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay productos disponibles</td></tr>';
+                return;
+            }
+
+            let html = '';
+            products.forEach(product => {
+                html += `
+            <tr>
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>${product.category_name}</td>
+                <td>$${product.price.toFixed(2)}</td>
+                <td>${product.stock}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-secondary btn-edit-product" data-id="${product.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-delete-product" data-id="${product.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+            });
+
+            tableBody.innerHTML = html;
+
+            // Agregar event listeners para editar y eliminar
+            document.querySelectorAll('.btn-edit-product').forEach(button => {
+                button.addEventListener('click', function () {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    editProduct(productId);
+                });
+            });
+
+            document.querySelectorAll('.btn-delete-product').forEach(button => {
+                button.addEventListener('click', function () {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    confirmDeleteProduct(productId);
+                });
+            });
+        }
+
+        function populateCategorySelect() {
+            const selectElement = document.getElementById('product-category');
+
+            // Limpiar opciones existentes excepto la primera
+            while (selectElement.options.length > 1) {
+                selectElement.remove(1);
+            }
+
+            // Agregar categorías como opciones
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                selectElement.appendChild(option);
+            });
+        }
+
+        function showProductModal(isEdit = false) {
+            document.getElementById('product-modal-title').textContent = isEdit ? 'Editar Producto' : 'Nuevo Producto';
+
+            if (!isEdit) {
+                // Limpiar formulario para nuevo producto
+                document.getElementById('product-form').reset();
+                document.getElementById('product-id').value = '';
+            }
+
+            populateCategorySelect();
+            openModal('product-modal');
+        }
+
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+
+            if (product) {
+                document.getElementById('product-id').value = product.id;
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-category').value = product.category_id;
+                document.getElementById('product-description').value = product.description || '';
+                document.getElementById('product-price').value = product.price;
+                document.getElementById('product-stock').value = product.stock;
+
+                showProductModal(true);
+            }
+        }
+
+        function confirmDeleteProduct(productId) {
+            productIdToDelete = productId;
+            openModal('delete-modal');
+        }
+
+        function deleteProduct() {
+            if (productIdToDelete) {
+                // En una aplicación real, aquí se haría una llamada a la API
+                products = products.filter(p => p.id !== productIdToDelete);
+
+                renderProductsTable();
+                closeModal('delete-modal');
+                showAlert('Producto eliminado correctamente');
+
+                productIdToDelete = null;
+            }
+        }
+
+        function saveProduct(event) {
+            event.preventDefault();
+
+            const productId = document.getElementById('product-id').value;
+            const name = document.getElementById('product-name').value;
+            const categoryId = parseInt(document.getElementById('product-category').value);
+            const description = document.getElementById('product-description').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            const stock = parseInt(document.getElementById('product-stock').value);
+
+            // Obtener nombre de la categoría
+            const category = categories.find(c => c.id === categoryId);
+            const categoryName = category ? category.name : '';
+
+            if (productId) {
+                // Actualizar producto existente
+                const index = products.findIndex(p => p.id === parseInt(productId));
+
+                if (index !== -1) {
+                    products[index] = {
+                        ...products[index],
+                        name,
+                        category_id: categoryId,
+                        category_name: categoryName,
+                        description,
+                        price,
+                        stock
+                    };
+
+                    showAlert('Producto actualizado correctamente');
+                }
+            } else {
+                // Crear nuevo producto
+                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+
+                products.push({
+                    id: newId,
+                    name,
+                    category_id: categoryId,
+                    category_name: categoryName,
+                    description,
+                    price,
+                    stock
+                });
+
+                showAlert('Producto añadido correctamente');
+            }
+
+            renderProductsTable();
+            closeModal('product-modal');
+        }
+
+        // Gestión de categorías
+        function renderCategoriesTable() {
+            const tableBody = document.getElementById('categories-table-body');
+
+            if (categories.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No hay categorías disponibles</td></tr>';
+                return;
+            }
+
+            let html = '';
+            categories.forEach(category => {
+                html += `
+            <tr>
+                <td>${category.id}</td>
+                <td>${category.name}</td>
+                <td>${category.description || '-'}</td>
+                <td>${category.created_at}</td>
+            </tr>
+        `;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function saveCategory(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('category-name').value;
+            const description = document.getElementById('category-description').value;
+
+            // Crear nueva categoría
+            const newId = categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+            const today = new Date();
+            const created_at = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
+            categories.push({
+                id: newId,
+                name,
+                description,
+                created_at
+            });
+
+            document.getElementById('category-form').reset();
+            renderCategoriesTable();
+            showAlert('Categoría añadida correctamente');
+        }
+
+        // Cambio de pestañas
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    // Quitar clase active de todas las pestañas
+                    tabs.forEach(t => t.classList.remove('active'));
+
+                    // Agregar clase active a la pestaña actual
+                    this.classList.add('active');
+
+                    // Ocultar todos los contenidos de pestañas
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Mostrar el contenido de la pestaña actual
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId + '-tab').classList.add('active');
+                });
+            });
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Formulario de productos
+            document.getElementById('product-form').addEventListener('submit', saveProduct);
+
+            // Botón nuevo producto
+            document.getElementById('new-product-btn').addEventListener('click', () => showProductModal(false));
+
+            // Formulario de categorías
+            document.getElementById('category-form').addEventListener('submit', saveCategory);
+
+            // Confirmar eliminación de producto
+            document.getElementById('confirm-delete').addEventListener('click', deleteProduct);
+
+            // Cerrar modales
+            document.querySelectorAll('.close, .close-modal').forEach(element => {
+                element.addEventListener('click', function () {
+                    closeAllModals();
+                });
+            });
+
+            // Cerrar modal al hacer clic fuera
+            window.addEventListener('click', function (event) {
+                if (event.target.classList.contains('modal')) {
+                    closeAllModals();
+                }
+            });
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchMockData();
+            setupTabs();
+            setupEventListeners();
+            renderProductsTable();
+            renderCategoriesTable();
+        });
+    </script>
+</body>
+
+</html>
